@@ -113,7 +113,7 @@ export const App: React.FC = () => {
 
             {/* GitHub Repo Link */}
             <a
-              href="https://github.com/corte/Compilador-C-ASM"
+              href="https://github.com/JaimeVGA/Convertidor-C-a-Ensamblador-"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[14px] font-sans text-[#d7d9dd] hover:text-[#e5e7eb] hover:bg-[#272a2e] border border-transparent hover:border-[#272a2e] transition-colors ml-1"
