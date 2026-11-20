@@ -1,4 +1,4 @@
-import { AssembledLine } from '../riscv/assembler';
+import type { AssembledLine } from '../types';
 
 export type RomDepth = 32 | 64 | 128 | 256;
 
@@ -11,7 +11,8 @@ const UPPER_BIT_BY_DEPTH: Record<RomDepth, number> = {
 
 export function generateVhdl(
   listado: AssembledLine[],
-  depth: RomDepth = 32
+  depth: RomDepth = 32,
+  archLabel = 'RISC-V (RV32I)'
 ): string {
   const upperBit = UPPER_BIT_BY_DEPTH[depth] ?? 6;
   const maxIndex = depth - 1;
@@ -45,6 +46,7 @@ end entity instruction_memory;
 
 architecture Behavioral of instruction_memory is
 
+    -- Arquitectura objetivo: ${archLabel}
     -- Definición de la ROM para guardar hasta ${depth} instrucciones
     type rom_type is array (0 to ${maxIndex}) of std_logic_vector(31 downto 0);
     

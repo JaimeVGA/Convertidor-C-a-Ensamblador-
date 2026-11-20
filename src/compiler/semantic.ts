@@ -1,10 +1,12 @@
 import { ExprNode, ProgramNode, StmtNode, VarDataType } from './ast';
 import { CompileError, createError } from './errors';
+import type { TargetBackend } from './types';
 
 export interface VariableSymbol {
   name: string;
   varType: VarDataType;
-  reg: number; // x10 .. x27
+  reg: number;
+  regName: string;
   ramAddr: number; // 0, 4, 8, ...
   isInput: boolean; // declared without initializer
   linea: number;
@@ -17,16 +19,32 @@ export interface SemanticResult {
   errores: CompileError[];
 }
 
-const MAX_VARIABLES = 18; // x10..x27
+const DEFAULT_VAR_REGS = Array.from({ length: 18 }, (_, i) => 10 + i); // x10..x27
 
 export function fitsInImm12(val: number): boolean {
   return val >= -2048 && val <= 2047;
 }
 
-export function analyzeSemantics(program: ProgramNode): SemanticResult {
+function defaultValidateConstant(val: number): string | null {
+  if (!fitsInImm12(val)) {
+    return `La constante ${val} no cabe en un inmediato de 12 bits (−2048..2047) y el procesador no tiene instrucción LUI.`;
+  }
+  return null;
+}
+
+export function analyzeSemantics(
+  program: ProgramNode,
+  backend?: TargetBackend
+): SemanticResult {
   const errores: CompileError[] = [];
   const variables: VariableSymbol[] = [];
   const symbolMap = new Map<string, VariableSymbol>();
+
+  const varRegs = backend ? backend.meta.varRegs : DEFAULT_VAR_REGS;
+  const maxVariables = varRegs.length;
+  const varRegRangeLabel = backend ? backend.meta.varRegRangeLabel : 'x10..x27';
+  const formatReg = backend ? backend.meta.formatReg : (r: number) => `x${r}`;
+  const validateConstant = backend ? backend.validateConstant : defaultValidateConstant;
 
   // Fold constants and infer expression types
   const checkAndFoldExpr = (expr: ExprNode): ExprNode => {
@@ -155,27 +173,21 @@ export function analyzeSemantics(program: ProgramNode): SemanticResult {
     }
   };
 
-  const validateImm12InExpr = (expr: ExprNode) => {
+  const validateConstantInExpr = (expr: ExprNode) => {
     switch (expr.kind) {
       case 'NumberLiteral': {
-        if (!fitsInImm12(expr.value)) {
-          errores.push(
-            createError(
-              expr.linea,
-              expr.columna,
-              `La constante ${expr.value} no cabe en un inmediato de 12 bits (−2048..2047) y el procesador no tiene instrucción LUI.`
-            )
-          );
+        const msg = validateConstant(expr.value);
+        if (msg) {
+          errores.push(createError(expr.linea, expr.columna, msg));
         }
         break;
       }
       case 'UnaryExpr':
-        validateImm12InExpr(expr.operand);
+        validateConstantInExpr(expr.operand);
         break;
       case 'BinaryExpr':
-        validateImm12InExpr(expr.left);
-        // Note: For `a - 2048`, `-2048` negated is `+2048` which doesn't fit in ADDI, so codegen will load `-2048` into temp and use SUB
-        validateImm12InExpr(expr.right);
+        validateConstantInExpr(expr.left);
+        validateConstantInExpr(expr.right);
         break;
       case 'Identifier':
         break;
@@ -211,25 +223,27 @@ export function analyzeSemantics(program: ProgramNode): SemanticResult {
           );
           return;
         }
-        if (variables.length >= MAX_VARIABLES) {
+        if (variables.length >= maxVariables) {
           errores.push(
             createError(
               stmt.linea,
               stmt.columna,
-              `Se superó el límite máximo de ${MAX_VARIABLES} variables (registros x10..x27 agotados).`
+              `Se superó el límite máximo de ${maxVariables} variables (${varRegRangeLabel} agotados).`
             )
           );
           return;
         }
         if (stmt.init) {
           stmt.init = checkAndFoldExpr(stmt.init);
-          validateImm12InExpr(stmt.init);
+          validateConstantInExpr(stmt.init);
         }
         const idx = variables.length;
+        const reg = varRegs[idx];
         const sym: VariableSymbol = {
           name: stmt.name,
           varType: stmt.varType,
-          reg: 10 + idx,
+          reg,
+          regName: formatReg(reg),
           ramAddr: idx * 4,
           isInput: stmt.init === undefined,
           linea: stmt.linea,
@@ -246,12 +260,12 @@ export function analyzeSemantics(program: ProgramNode): SemanticResult {
           );
         }
         stmt.value = checkAndFoldExpr(stmt.value);
-        validateImm12InExpr(stmt.value);
+        validateConstantInExpr(stmt.value);
         break;
       }
       case 'If': {
         stmt.condition = checkAndFoldExpr(stmt.condition);
-        validateImm12InExpr(stmt.condition);
+        validateConstantInExpr(stmt.condition);
         for (const s of stmt.thenBranch) checkStmt(s, false);
         if (stmt.elseBranch) {
           for (const s of stmt.elseBranch) checkStmt(s, false);
@@ -260,7 +274,7 @@ export function analyzeSemantics(program: ProgramNode): SemanticResult {
       }
       case 'While': {
         stmt.condition = checkAndFoldExpr(stmt.condition);
-        validateImm12InExpr(stmt.condition);
+        validateConstantInExpr(stmt.condition);
         for (const s of stmt.body) checkStmt(s, false);
         break;
       }

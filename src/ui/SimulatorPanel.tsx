@@ -9,17 +9,26 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
-import { AssembledLine } from '../compiler/riscv/assembler';
+import { simulateProgram } from '../compiler/compile';
 import { VariableSymbol } from '../compiler/semantic';
-import { runSimulation, SimulationStepResult } from '../compiler/riscv/simulator';
+import type {
+  ArchMetadata,
+  AssembledLine,
+  SimulationStepResult,
+  TargetArch,
+} from '../compiler/types';
 
 interface SimulatorPanelProps {
+  arch: TargetArch;
+  archMeta: ArchMetadata;
   listado: AssembledLine[];
   variables: VariableSymbol[];
   defaultInputs?: Record<string, number>;
 }
 
 export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({
+  arch,
+  archMeta,
   listado,
   variables,
   defaultInputs = {},
@@ -50,9 +59,9 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({
       const parsed = Number(v);
       numericInputs[k] = Number.isFinite(parsed) ? parsed | 0 : 0;
     }
-    const result = runSimulation(listado, variables, numericInputs);
+    const result = simulateProgram(arch, listado, variables, numericInputs);
     setSimResult(result);
-  }, [listado, variables, inputs]);
+  }, [arch, listado, variables, inputs]);
 
   const handleRunManual = () => {
     const numericInputs: Record<string, number> = {};
@@ -60,7 +69,7 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({
       const parsed = Number(v);
       numericInputs[k] = Number.isFinite(parsed) ? parsed | 0 : 0;
     }
-    setSimResult(runSimulation(listado, variables, numericInputs));
+    setSimResult(simulateProgram(arch, listado, variables, numericInputs));
   };
 
   const handleResetInputs = () => {
@@ -71,16 +80,18 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({
     setInputs(reset);
   };
 
+  const varRegSet = new Set(archMeta.varRegs);
+
   return (
     <div className="bg-[#1c1e21] border border-[#272a2e] rounded-[4px] overflow-hidden">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-[#272a2e] bg-[#121317]">
         <div className="flex items-center gap-2.5">
-          <span className="w-2 h-2 rounded-full bg-[#a8ff53] shadow-[0_0_8px_rgba(168,255,83,0.5)]" />
+          <span className="w-2 h-2 rounded-full bg-[var(--accent)] shadow-[0_0_8px_var(--accent-glow)]" />
           <Cpu className="w-4 h-4 text-[#878c99]" />
           <div>
             <h2 className="text-[14px] font-mono font-medium text-[#e5e7eb]">
-              Simulador Integrado (Hardware Verification)
+              Simulador Integrado — {archMeta.name}
             </h2>
             <p className="text-[12px] text-[#878c99]">
               Valida en la Memoria de datos (RAM) y el Banco de registros antes de sintetizar en Active-HDL
@@ -88,26 +99,49 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({
           </div>
         </div>
 
-        {simResult && (
-          <div className="flex items-center gap-2 text-[12px] font-mono">
-            {simResult.halted ? (
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#1c1e21] text-[#a8ff53] border border-[#272a2e]">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Ciclo de fin alcanzado · {simResult.stepsExecuted} ciclos ejecutados
-              </span>
-            ) : simResult.infiniteLoopDetected ? (
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#1c1e21] text-[#d9f07c] border border-[#272a2e]">
-                <AlertOctagon className="w-3.5 h-3.5" />
-                &gt;100k instrucciones (posible bucle)
-              </span>
-            ) : simResult.error ? (
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#1c1e21] text-[#f43f5e] border border-[#272a2e]">
-                <AlertOctagon className="w-3.5 h-3.5" />
-                {simResult.error}
-              </span>
-            ) : null}
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-2 text-[12px] font-mono">
+          {simResult?.flags && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#1c1e21] border border-[#272a2e]">
+              <span className="text-[#878c99] mr-1">CPSR:</span>
+              {(['N', 'Z', 'C', 'V'] as const).map((flag) => {
+                const active = simResult.flags![flag];
+                return (
+                  <span
+                    key={flag}
+                    className={`px-1.5 py-0.2 rounded-[4px] border text-[11px] font-bold ${
+                      active
+                        ? 'bg-[var(--accent-soft)] border-[var(--accent-border)] text-[var(--accent)]'
+                        : 'bg-[#121317] border-[#272a2e] text-[#878c99]'
+                    }`}
+                  >
+                    {flag}={active ? '1' : '0'}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+
+          {simResult && (
+            <>
+              {simResult.halted ? (
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#1c1e21] text-[var(--accent)] border border-[#272a2e]">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Ciclo de fin alcanzado · {simResult.stepsExecuted} ciclos ejecutados
+                </span>
+              ) : simResult.infiniteLoopDetected ? (
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#1c1e21] text-[#d9f07c] border border-[#272a2e]">
+                  <AlertOctagon className="w-3.5 h-3.5" />
+                  &gt;100k instrucciones (posible bucle)
+                </span>
+              ) : simResult.error ? (
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#1c1e21] text-[#f43f5e] border border-[#272a2e]">
+                  <AlertOctagon className="w-3.5 h-3.5" />
+                  {simResult.error}
+                </span>
+              ) : null}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Grid Content */}
@@ -141,10 +175,10 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({
                   className="flex items-center justify-between gap-3 p-2.5 rounded-[4px] bg-[#121317] border border-[#272a2e]"
                 >
                   <div className="font-mono text-[14px]">
-                    <span className="text-[#a8ff53] font-medium">{v.name}</span>
+                    <span className="text-[var(--accent)] font-medium">{v.name}</span>
                     <span className="text-[#878c99] ml-1.5 text-[12px]">({v.varType})</span>
                     <div className="text-[11px] text-[#878c99]">
-                      RAM[{v.ramAddr}] → x{v.reg}
+                      RAM[{v.ramAddr}] → {v.regName ?? archMeta.formatReg(v.reg)}
                     </div>
                   </div>
                   <input
@@ -160,10 +194,10 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({
             </div>
           )}
 
-          {/* Primary Signal Lime Filled Button */}
+          {/* Primary Accent Filled Button */}
           <button
             onClick={handleRunManual}
-            className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-[4px] bg-[#a8ff53] text-[#121317] font-sans font-medium text-[14px] hover:bg-[#a8ff53]/90 transition-all shadow-[inset_0_0_0_1px_rgba(168,255,83,0.2)]"
+            className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-[4px] bg-[var(--accent)] text-[#121317] font-sans font-medium text-[14px] hover:bg-[var(--accent-hover)] transition-all shadow-[inset_0_0_0_1px_var(--accent-border)]"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
             Ejecutar Simulación
@@ -186,13 +220,13 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({
                   >
                     <div className="flex items-center justify-between text-[12px] text-[#878c99] mb-1">
                       <span>
-                        <strong className="text-[#e5e7eb]">{vr.name}</strong> (x{vr.reg})
+                        <strong className="text-[#e5e7eb]">{vr.name}</strong> ({vr.regName})
                       </span>
                       <span className="px-1.5 py-0.2 rounded-[4px] bg-[#1c1e21] text-[#9c9af2] border border-[#272a2e]">
                         RAM[{vr.ramAddr}]
                       </span>
                     </div>
-                    <div className="text-[20px] font-bold text-[#afec73] tracking-tight">
+                    <div className="text-[20px] font-bold text-[var(--accent)] tracking-tight">
                       {vr.displayValue}
                     </div>
                     <div className="text-[12px] text-[#878c99] mt-0.5">{vr.hexValue}</div>
@@ -216,12 +250,12 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({
                 {showAllRegs ? (
                   <>
                     <ChevronUp className="w-3.5 h-3.5" />
-                    Ocultar Banco de Registros (x0..x31)
+                    Ocultar Banco de Registros ({archMeta.regCount} regs)
                   </>
                 ) : (
                   <>
                     <ChevronDown className="w-3.5 h-3.5" />
-                    Ver Banco de Registros (x0..x31)
+                    Ver Banco de Registros ({archMeta.regCount} regs)
                   </>
                 )}
               </button>
@@ -230,19 +264,20 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({
                 <div className="mt-2.5 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-1.5 font-mono text-[11px]">
                   {Array.from(simResult.registers).map((val, idx) => {
                     const isNonZero = val !== 0;
-                    const isVarReg = idx >= 10 && idx <= 27;
+                    const isVarReg = varRegSet.has(idx);
+                    const regLabel = simResult.regLabels[idx] ?? archMeta.formatRegBankLabel(idx);
                     return (
                       <div
                         key={idx}
                         className={`p-1.5 rounded-[4px] border ${
                           isNonZero
-                            ? 'bg-[#121317] border-[#3b3e45] text-[#a8ff53]'
+                            ? 'bg-[#121317] border-[#3b3e45] text-[var(--accent)]'
                             : 'bg-[#121317] border-[#272a2e] text-[#878c99]'
                         }`}
                       >
-                        <div className="flex items-center justify-between text-[10px]">
-                          <span className="font-bold">x{idx}</span>
-                          {isVarReg && <span className="text-[#9c9af2]">var</span>}
+                        <div className="flex items-center justify-between text-[10px] gap-1">
+                          <span className="font-bold truncate">{regLabel}</span>
+                          {isVarReg && <span className="text-[#9c9af2] shrink-0">var</span>}
                         </div>
                         <div className="font-semibold truncate mt-0.5">{val}</div>
                       </div>

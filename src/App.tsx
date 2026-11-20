@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Layers,
   Binary,
@@ -12,9 +12,9 @@ import {
   Code2,
   SlidersHorizontal,
 } from 'lucide-react';
-import { compile } from './compiler/compile';
+import { compile, getBackend } from './compiler/compile';
 import { RomDepth } from './compiler/output/vhdl';
-import { SUPPORTED_ISA, SUPPORTED_MNEMONICS } from './compiler/riscv/isa';
+import type { MipsArithmeticMode, TargetArch } from './compiler/types';
 import { EXAMPLES } from './examples';
 import { Editor } from './ui/Editor';
 import { ErrorPanel } from './ui/ErrorPanel';
@@ -27,20 +27,41 @@ import { DocsView } from './ui/DocsView';
 type NavigationPage = 'compiler' | 'simulator' | 'docs';
 type OutputTab = 'listing' | 'fields' | 'vhdl' | 'isa';
 
+const ARCH_OPTIONS: { id: TargetArch; label: string; colorDot: string }[] = [
+  { id: 'riscv', label: 'RISC-V (32b)', colorDot: '#a8ff53' },
+  { id: 'mips', label: 'MIPS (32b)', colorDot: '#38bdf8' },
+  { id: 'arm', label: 'ARM (32b)', colorDot: '#c084fc' },
+];
+
 export const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<NavigationPage>('compiler');
+  const [arch, setArch] = useState<TargetArch>('riscv');
+  const [mipsArithmeticMode, setMipsArithmeticMode] =
+    useState<MipsArithmeticMode>('signed');
   const [selectedExampleId, setSelectedExampleId] = useState<string>(EXAMPLES[0].id);
   const [code, setCode] = useState<string>(EXAMPLES[0].codigo);
   const [romDepth, setRomDepth] = useState<RomDepth>(32);
   const [activeTab, setActiveTab] = useState<OutputTab>('listing');
   const [hoveredCLine, setHoveredCLine] = useState<number | undefined>(undefined);
 
+  // Sync dynamic theme attribute across the document
+  useEffect(() => {
+    document.documentElement.dataset.arch = arch;
+  }, [arch]);
+
   const activeExample = useMemo(
     () => EXAMPLES.find((e) => e.id === selectedExampleId) ?? EXAMPLES[0],
     [selectedExampleId]
   );
 
-  const outcome = useMemo(() => compile(code, { romDepth }), [code, romDepth]);
+  const backend = useMemo(() => getBackend(arch), [arch]);
+  const archMeta = backend.meta;
+  const isaCatalog = backend.isaCatalog;
+
+  const outcome = useMemo(
+    () => compile(code, { arch, romDepth, mipsArithmeticMode }),
+    [code, arch, romDepth, mipsArithmeticMode]
+  );
 
   const handleSelectExample = (id: string) => {
     const ex = EXAMPLES.find((e) => e.id === id);
@@ -51,7 +72,10 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#1c1e21] text-[#e5e7eb] font-sans">
+    <div
+      data-arch={arch}
+      className="min-h-screen flex flex-col bg-[#1c1e21] text-[#e5e7eb] font-sans transition-colors duration-200"
+    >
       {/* Navbar */}
       <header className="sticky top-0 z-30 border-b border-[#272a2e] bg-[#1c1e21]/95 backdrop-blur-sm">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
@@ -61,11 +85,11 @@ export const App: React.FC = () => {
               onClick={() => setCurrentPage('compiler')}
               className="flex items-center gap-2 hover:opacity-90 transition-opacity"
             >
-              <span className="flex items-center justify-center w-6 h-6 rounded-[4px] bg-[#a8ff53]/15 text-[#a8ff53]">
-                <Play className="w-3.5 h-3.5 fill-[#a8ff53] text-[#a8ff53]" />
+              <span className="flex items-center justify-center w-6 h-6 rounded-[4px] bg-[var(--accent-soft)] text-[var(--accent)] transition-colors">
+                <Play className="w-3.5 h-3.5 fill-[var(--accent)] text-[var(--accent)]" />
               </span>
               <span className="font-display font-semibold text-[20px] text-[#e5e7eb] tracking-tight">
-                Compiler<span className="text-[#a8ff53]">.dev</span>
+                Compiler<span className="text-[var(--accent)] transition-colors">.dev</span>
               </span>
             </button>
           </div>
@@ -92,10 +116,10 @@ export const App: React.FC = () => {
                   : 'text-[#d7d9dd] hover:text-[#e5e7eb] hover:bg-[#272a2e]'
               }`}
             >
-              <Cpu className="w-3.5 h-3.5 text-[#a8ff53]" />
+              <Cpu className="w-3.5 h-3.5 text-[var(--accent)]" />
               <span>Simulador</span>
               {outcome.ok && (
-                <span className="w-1.5 h-1.5 rounded-full bg-[#a8ff53] ml-0.5 shadow-[0_0_6px_rgba(168,255,83,0.8)]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] ml-0.5 shadow-[0_0_6px_var(--accent-glow)]" />
               )}
             </button>
 
@@ -130,6 +154,8 @@ export const App: React.FC = () => {
         {/* VIEW 1: DOCS & INFO */}
         {currentPage === 'docs' && (
           <DocsView
+            arch={arch}
+            onChangeArch={setArch}
             onGoToCompiler={() => setCurrentPage('compiler')}
             onGoToSimulator={() => setCurrentPage('simulator')}
           />
@@ -141,15 +167,61 @@ export const App: React.FC = () => {
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#272a2e] pb-4">
               <div>
                 <h1 className="font-display font-medium text-[28px] text-[#e5e7eb] flex items-center gap-2.5">
-                  <Cpu className="w-6 h-6 text-[#a8ff53]" />
-                  <span>Simulador de Hardware RV32I</span>
+                  <Cpu className="w-6 h-6 text-[var(--accent)]" />
+                  <span>Simulador de Hardware {archMeta.shortName}</span>
                 </h1>
                 <p className="text-[14px] text-[#878c99]">
-                  Ejecuta el código máquina compilado ciclo a ciclo verificando los 32 registros y la memoria de datos (RAM).
+                  Ejecuta el código máquina compilado ciclo a ciclo verificando los {archMeta.regCount} registros y la memoria de datos (RAM).
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* Architecture switcher in simulator */}
+                <div className="flex items-center rounded-[4px] bg-[#121317] p-1 border border-[#272a2e] text-[12px] font-mono">
+                  {ARCH_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.id}
+                      onClick={() => setArch(opt.id)}
+                      className={`px-2.5 py-1 rounded-[4px] transition-colors flex items-center gap-1.5 ${
+                        arch === opt.id
+                          ? 'bg-[#1c1e21] text-[var(--accent)] border border-[#3b3e45] font-medium'
+                          : 'text-[#878c99] hover:text-[#e5e7eb]'
+                      }`}
+                    >
+                      <span
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: opt.colorDot }}
+                      />
+                      <span>{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {arch === 'mips' && (
+                  <div className="flex items-center rounded-[4px] bg-[#121317] p-1 border border-[#272a2e] text-[12px] font-mono">
+                    <button
+                      onClick={() => setMipsArithmeticMode('signed')}
+                      className={`px-2 py-1 rounded-[4px] transition-colors ${
+                        mipsArithmeticMode === 'signed'
+                          ? 'bg-[#1c1e21] text-[var(--accent)] border border-[#3b3e45] font-medium'
+                          : 'text-[#878c99] hover:text-[#e5e7eb]'
+                      }`}
+                    >
+                      ADD/ADDI
+                    </button>
+                    <button
+                      onClick={() => setMipsArithmeticMode('unsigned')}
+                      className={`px-2 py-1 rounded-[4px] transition-colors ${
+                        mipsArithmeticMode === 'unsigned'
+                          ? 'bg-[#1c1e21] text-[var(--accent)] border border-[#3b3e45] font-medium'
+                          : 'text-[#878c99] hover:text-[#e5e7eb]'
+                      }`}
+                    >
+                      ADDU/ADDIU
+                    </button>
+                  </div>
+                )}
+
                 <button
                   onClick={() => setCurrentPage('compiler')}
                   className="px-3 py-1.5 rounded-[4px] bg-[#121317] border border-[#272a2e] text-[#d7d9dd] hover:text-[#e5e7eb] text-[14px] font-mono transition-colors"
@@ -162,20 +234,22 @@ export const App: React.FC = () => {
             {!outcome.ok ? (
               <div className="p-8 rounded-[4px] bg-[#121317] border border-[#f43f5e]/40 text-center space-y-3 font-mono">
                 <p className="text-[#f43f5e] text-[15px] font-semibold">
-                  El código en C actual tiene errores de compilación.
+                  El código en C actual tiene errores de compilación en {archMeta.shortName}.
                 </p>
                 <p className="text-[#878c99] text-[13px]">
-                  Regresa a la pestaña del Compilador para resolver los diagnósticos antes de simular.
+                  {outcome.errores[0]?.mensaje ?? 'Regresa a la pestaña del Compilador para resolver los diagnósticos antes de simular.'}
                 </p>
                 <button
                   onClick={() => setCurrentPage('compiler')}
-                  className="px-4 py-2 rounded-[4px] bg-[#a8ff53] text-[#121317] font-medium text-[14px]"
+                  className="px-4 py-2 rounded-[4px] bg-[var(--accent)] text-[#121317] font-medium text-[14px]"
                 >
                   Ir al Editor
                 </button>
               </div>
             ) : (
               <SimulatorPanel
+                arch={arch}
+                archMeta={archMeta}
                 listado={outcome.listado}
                 variables={outcome.variables}
                 defaultInputs={activeExample.entradasPorDefecto}
@@ -188,11 +262,15 @@ export const App: React.FC = () => {
         {currentPage === 'compiler' && (
           <div className="space-y-6">
             {/* Headline Section */}
-            <div className="py-2 text-center max-w-[800px] mx-auto space-y-2">
+            <div className="py-2 text-center max-w-[820px] mx-auto space-y-2">
               <h2 className="font-display font-medium text-[32px] sm:text-[40px] leading-[1.1] tracking-[0.04em] text-[#e5e7eb]">
-                Compila C a RISC-V con emisión limpia a VHDL
+                Compila C a{' '}
+                <span className="text-[var(--accent)] transition-colors">
+                  {archMeta.shortName}
+                </span>{' '}
+                con emisión limpia a VHDL
               </h2>
-              <p className="text-[15px] text-[#878c99] leading-relaxed max-w-[620px] mx-auto">
+              <p className="text-[15px] text-[#878c99] leading-relaxed max-w-[640px] mx-auto">
                 Generador para procesadores de 32 bits (R, I, L, S, B). Codificación exacta en hexadecimal y memoria ROM compatible con simuladores Active-HDL.
               </p>
             </div>
@@ -207,6 +285,7 @@ export const App: React.FC = () => {
                     onChange={setCode}
                     errores={outcome.ok ? [] : outcome.errores}
                     variables={outcome.ok ? outcome.variables : []}
+                    archMeta={archMeta}
                     highlightedLine={hoveredCLine}
                   />
                 </div>
@@ -251,7 +330,7 @@ export const App: React.FC = () => {
                           : 'text-[#878c99] hover:text-[#d7d9dd]'
                       }`}
                     >
-                      <FileCode2 className="w-3.5 h-3.5 text-[#a8ff53]" />
+                      <FileCode2 className="w-3.5 h-3.5 text-[var(--accent)]" />
                       Memoria VHDL
                     </button>
 
@@ -264,13 +343,13 @@ export const App: React.FC = () => {
                       }`}
                     >
                       <HelpCircle className="w-3.5 h-3.5 text-[#d9f07c]" />
-                      ISA (27)
+                      ISA ({isaCatalog.length})
                     </button>
                   </div>
 
                   {outcome.ok && (
                     <div className="font-mono text-[12px] text-[#878c99] hidden sm:block">
-                      <span className="text-[#a8ff53] font-medium">{outcome.listado.length}</span> / {romDepth} pal.
+                      <span className="text-[var(--accent)] font-medium">{outcome.listado.length}</span> / {romDepth} pal.
                     </div>
                   )}
                 </div>
@@ -283,17 +362,20 @@ export const App: React.FC = () => {
                         Corrige los diagnósticos del código C para generar las palabras binarias.
                       </p>
                       <p className="text-[12px] text-[#878c99] font-mono">
-                        El compilador solo emite las 27 instrucciones de tu set de hardware.
+                        El compilador solo emite instrucciones del set soportado de {archMeta.shortName}.
                       </p>
                     </div>
                   ) : activeTab === 'listing' ? (
                     <ListingTable
                       listado={outcome.listado}
+                      archName={archMeta.shortName}
+                      isaCatalog={isaCatalog}
                       onHoverLine={setHoveredCLine}
                     />
                   ) : activeTab === 'fields' ? (
                     <FieldView
                       listado={outcome.listado}
+                      arch={arch}
                       onHoverLine={setHoveredCLine}
                     />
                   ) : activeTab === 'vhdl' ? (
@@ -302,62 +384,112 @@ export const App: React.FC = () => {
                       hexTxt={outcome.hexTxt}
                       romDepth={outcome.romDepth}
                       wordCount={outcome.listado.length}
+                      archName={archMeta.name}
                     />
                   ) : (
                     <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 font-mono text-[12px]">
-                      {SUPPORTED_MNEMONICS.map((m) => {
-                        const s = SUPPORTED_ISA[m];
-                        return (
-                          <div
-                            key={m}
-                            className="p-2.5 rounded-[4px] bg-[#1c1e21] border border-[#272a2e] flex flex-col justify-between"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-semibold text-[#a8ff53]">{s.mnemonic}</span>
-                              <span className="px-1.5 py-0.2 rounded-[4px] bg-[#121317] text-[11px] text-[#878c99] border border-[#272a2e]">
-                                Tipo {s.tipo}
-                              </span>
-                            </div>
-                            <p className="text-[12px] text-[#878c99] font-sans mt-1">
-                              {s.descripcion}
-                            </p>
+                      {isaCatalog.map((s) => (
+                        <div
+                          key={s.mnemonic}
+                          className="p-2.5 rounded-[4px] bg-[#1c1e21] border border-[#272a2e] flex flex-col justify-between"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-[var(--accent)]">{s.mnemonic}</span>
+                            <span className="px-1.5 py-0.2 rounded-[4px] bg-[#121317] text-[11px] text-[#878c99] border border-[#272a2e]">
+                              Tipo {s.tipo}
+                            </span>
                           </div>
-                        );
-                      })}
+                          <p className="text-[12px] text-[#878c99] font-sans mt-1">
+                            {s.descripcion}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Bottom Controls Bar: Architecture, Test Examples, ROM Depth */}
+            {/* Bottom Controls Bar: Architecture, MIPS Arithmetic Selector, ROM Depth, Test Examples */}
             <div className="p-4 rounded-[4px] bg-[#121317] border border-[#272a2e] space-y-3">
-              <div className="flex items-center gap-2 text-[12px] font-mono text-[#878c99] uppercase tracking-wider">
-                <SlidersHorizontal className="w-3.5 h-3.5 text-[#a8ff53]" />
-                <span>Configuración de Arquitectura & Código de Prueba</span>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 text-[12px] font-mono text-[#878c99] uppercase tracking-wider">
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--accent)]" />
+                  <span>Configuración de Arquitectura & Código de Prueba</span>
+                </div>
+                <span className="text-[11px] font-mono text-[#878c99]">
+                  Tema activo:{' '}
+                  <strong className="text-[var(--accent)]">
+                    {arch === 'riscv' ? 'Verde (RISC-V)' : arch === 'mips' ? 'Azul (MIPS32)' : 'Morado (ARM32)'}
+                  </strong>
+                </span>
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-                {/* Left: Architecture & ROM Depth */}
+                {/* Left: Architecture, Conditional MIPS Mode & ROM Depth */}
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center rounded-[4px] bg-[#1c1e21] p-1 border border-[#272a2e] text-[12px] font-mono">
-                    <span className="px-2.5 py-1 rounded-[4px] bg-[#121317] text-[#a8ff53] border border-[#3b3e45] font-medium flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3 h-3 text-[#a8ff53]" /> RISC-V (32b)
-                    </span>
-                    <span title="Fase 2" className="px-2.5 py-1 text-[#878c99] opacity-40 cursor-not-allowed">
-                      MIPS
-                    </span>
-                    <span title="Fase 2" className="px-2.5 py-1 text-[#878c99] opacity-40 cursor-not-allowed">
-                      ARM
-                    </span>
+                    {ARCH_OPTIONS.map((opt) => {
+                      const active = arch === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          onClick={() => setArch(opt.id)}
+                          className={`px-2.5 py-1 rounded-[4px] transition-colors flex items-center gap-1.5 ${
+                            active
+                              ? 'bg-[#121317] text-[var(--accent)] border border-[#3b3e45] font-medium'
+                              : 'text-[#878c99] hover:text-[#e5e7eb]'
+                          }`}
+                        >
+                          {active ? (
+                            <CheckCircle2 className="w-3 h-3 text-[var(--accent)]" />
+                          ) : (
+                            <span
+                              className="w-2 h-2 rounded-full opacity-75"
+                              style={{ backgroundColor: opt.colorDot }}
+                            />
+                          )}
+                          <span>{opt.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
+
+                  {/* Conditional MIPS Arithmetic Instruction Selector */}
+                  {arch === 'mips' && (
+                    <div className="flex items-center gap-2 bg-[#1c1e21] border border-[var(--accent-border)] rounded-[4px] px-2.5 py-1 text-[12px] font-mono">
+                      <span className="text-[#878c99]">Aritmética MIPS:</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setMipsArithmeticMode('signed')}
+                          className={`px-2 py-0.5 rounded-[4px] transition-colors ${
+                            mipsArithmeticMode === 'signed'
+                              ? 'bg-[var(--accent)] text-[#121317] font-semibold'
+                              : 'text-[#d7d9dd] hover:bg-[#272a2e]'
+                          }`}
+                        >
+                          ADD / SUB / ADDI
+                        </button>
+                        <button
+                          onClick={() => setMipsArithmeticMode('unsigned')}
+                          className={`px-2 py-0.5 rounded-[4px] transition-colors ${
+                            mipsArithmeticMode === 'unsigned'
+                              ? 'bg-[var(--accent)] text-[#121317] font-semibold'
+                              : 'text-[#d7d9dd] hover:bg-[#272a2e]'
+                          }`}
+                        >
+                          ADDU / SUBU / ADDIU
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-2 bg-[#1c1e21] border border-[#272a2e] rounded-[4px] px-3 py-1.5 text-[12px] font-mono">
                     <span className="text-[#878c99]">Tamaño de ROM VHDL:</span>
                     <select
                       value={romDepth}
                       onChange={(e) => setRomDepth(Number(e.target.value) as RomDepth)}
-                      className="bg-transparent text-[#a8ff53] font-semibold focus:outline-none cursor-pointer"
+                      className="bg-transparent text-[var(--accent)] font-semibold focus:outline-none cursor-pointer"
                     >
                       <option value={32} className="bg-[#121317]">32 palabras (addr 6..2)</option>
                       <option value={64} className="bg-[#121317]">64 palabras (addr 7..2)</option>

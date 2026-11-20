@@ -7,6 +7,7 @@ interface VhdlPanelProps {
   hexTxt: string;
   romDepth: RomDepth;
   wordCount: number;
+  archName: string;
 }
 
 export const VhdlPanel: React.FC<VhdlPanelProps> = ({
@@ -14,6 +15,7 @@ export const VhdlPanel: React.FC<VhdlPanelProps> = ({
   hexTxt,
   romDepth,
   wordCount,
+  archName,
 }) => {
   const [subTab, setSubTab] = useState<'vhdl' | 'txt'>('vhdl');
   const [copied, setCopied] = useState(false);
@@ -73,8 +75,8 @@ export const VhdlPanel: React.FC<VhdlPanelProps> = ({
           >
             {copied ? (
               <>
-                <Check className="w-3.5 h-3.5 text-[#a8ff53]" />
-                <span className="text-[#a8ff53]">Copiado</span>
+                <Check className="w-3.5 h-3.5 text-[var(--accent)]" />
+                <span className="text-[var(--accent)]">Copiado</span>
               </>
             ) : (
               <>
@@ -84,10 +86,10 @@ export const VhdlPanel: React.FC<VhdlPanelProps> = ({
             )}
           </button>
 
-          {/* Primary Signal Lime Filled CTA Button */}
+          {/* Primary Accent Filled CTA Button */}
           <button
             onClick={() => downloadFile(vhdl, 'instruction_memory.vhdl')}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[4px] text-[14px] font-sans font-medium bg-[#a8ff53] text-[#121317] hover:bg-[#a8ff53]/90 transition-all shadow-[inset_0_0_0_1px_rgba(168,255,83,0.2)]"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[4px] text-[14px] font-sans font-medium bg-[var(--accent)] text-[#121317] hover:bg-[var(--accent-hover)] transition-all shadow-[inset_0_0_0_1px_var(--accent-border)]"
           >
             <Download className="w-3.5 h-3.5 text-[#121317]" />
             <span>Descargar .vhdl</span>
@@ -104,14 +106,15 @@ export const VhdlPanel: React.FC<VhdlPanelProps> = ({
       </div>
 
       {/* Info Status Bar */}
-      <div className="px-4 py-2 bg-[#121317] border-b border-[#272a2e] flex items-center justify-between text-[12px] font-mono text-[#878c99]">
+      <div className="px-4 py-2 bg-[#121317] border-b border-[#272a2e] flex flex-wrap items-center justify-between gap-2 text-[12px] font-mono text-[#878c99]">
         <span>
-          Entidad: <strong className="text-[#e5e7eb]">instruction_memory</strong> · Puertos:{' '}
+          Entidad: <strong className="text-[#e5e7eb]">instruction_memory</strong> · ISA:{' '}
+          <strong className="text-[var(--accent)]">{archName}</strong> · Puertos:{' '}
           <code className="text-[#b5b8c0]">addr(31 downto 0)</code> →{' '}
           <code className="text-[#b5b8c0]">data(31 downto 0)</code>
         </span>
         <span>
-          Ocupación: <strong className="text-[#a8ff53]">{wordCount}</strong> / {romDepth} palabras
+          Ocupación: <strong className="text-[var(--accent)]">{wordCount}</strong> / {romDepth} palabras
         </span>
       </div>
 

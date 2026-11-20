@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+:root,
+[data-arch="riscv"] {
+  --accent: #a8ff53;
+  --accent-hover: #96ee42;
+  --accent-soft: rgba(168, 255, 83, 0.15);
+  --accent-border: rgba(168, 255, 83, 0.32);
+  --accent-glow: rgba(168, 255, 83, 0.65);
+}
+
+[data-arch="mips"] {
+  --accent: #38bdf8;
+  --accent-hover: #0ea5e9;
+  --accent-soft: rgba(56, 189, 248, 0.15);
+  --accent-border: rgba(56, 189, 248, 0.32);
+  --accent-glow: rgba(56, 189, 248, 0.65);
+}
+
+[data-arch="arm"] {
+  --accent: #c084fc;
+  --accent-hover: #a855f7;
+  --accent-soft: rgba(192, 132, 252, 0.15);
+  --accent-border: rgba(192, 132, 252, 0.32);
+  --accent-glow: rgba(192, 132, 252, 0.65);
+}
+
+::selection {
+  background-color: var(--accent-soft);
+  color: var(--accent);
+}
+
 @layer base {
   body {
     background-color: #1c1e21;

@@ -1,31 +1,14 @@
 import { VariableSymbol } from '../semantic';
+import type { AssembledLine as GenericAssembledLine, SimulationStepResult } from '../types';
 import { AssembledLine } from './assembler';
 import { decodeFields } from './encoder';
 
-export interface SimulationStepResult {
-  halted: boolean;
-  infiniteLoopDetected: boolean;
-  stepsExecuted: number;
-  pc: number;
-  registers: Int32Array;
-  ram: Map<number, number>; // word-aligned byte address -> 32-bit signed value
-  variableResults: {
-    name: string;
-    varType: 'int' | 'unsigned';
-    reg: number;
-    ramAddr: number;
-    regValue: number;
-    ramValue: number;
-    displayValue: string;
-    hexValue: string;
-  }[];
-  error?: string;
-}
+export type { SimulationStepResult };
 
 export const MAX_SIMULATION_STEPS = 100_000;
 
 export function runSimulation(
-  listado: AssembledLine[],
+  listado: (AssembledLine | GenericAssembledLine)[],
   variables: VariableSymbol[],
   initialInputs: Record<string, number>,
   maxSteps = MAX_SIMULATION_STEPS
@@ -212,6 +195,7 @@ export function runSimulation(
       name: v.name,
       varType: v.varType,
       reg: v.reg,
+      regName: v.regName ?? `x${v.reg}`,
       ramAddr: v.ramAddr,
       regValue: regVal,
       ramValue: ramVal,
@@ -220,12 +204,15 @@ export function runSimulation(
     };
   });
 
+  const regLabels = Array.from({ length: 32 }, (_, i) => `x${i}`);
+
   return {
     halted,
     infiniteLoopDetected,
     stepsExecuted,
     pc,
     registers,
+    regLabels,
     ram,
     variableResults,
     error,

@@ -1,49 +1,58 @@
 import React from 'react';
-import { AssembledLine } from '../compiler/riscv/assembler';
-import { BitFieldSegment } from '../compiler/riscv/encoder';
+import type { AssembledLine, BitFieldRole, TargetArch } from '../compiler/types';
 
 interface FieldViewProps {
   listado: AssembledLine[];
+  arch: TargetArch;
   onHoverLine?: (cLine?: number) => void;
 }
 
-// Trigger.dev syntax highlighting colors for roles
-const ROLE_COLOR: Record<BitFieldSegment['role'], string> = {
+const ROLE_COLOR: Record<BitFieldRole, string> = {
   opcode: 'bg-[#9c9af2]/10 border-[#9c9af2]/30 text-[#9c9af2]',
+  cond: 'bg-[#d9f07c]/10 border-[#d9f07c]/30 text-[#d9f07c]',
   rd: 'bg-[#afec73]/10 border-[#afec73]/30 text-[#afec73]',
   funct3: 'bg-[#d9f07c]/10 border-[#d9f07c]/30 text-[#d9f07c]',
   rs1: 'bg-[#7655fd]/15 border-[#7655fd]/40 text-[#9c9af2]',
   rs2: 'bg-[#e888f8]/10 border-[#e888f8]/30 text-[#e888f8]',
   funct7: 'bg-[#fa3abf]/10 border-[#fa3abf]/30 text-[#fa3abf]',
-  imm: 'bg-[#a8ff53]/10 border-[#a8ff53]/30 text-[#a8ff53]',
+  imm: 'bg-[var(--accent-soft)] border-[var(--accent-border)] text-[var(--accent)]',
 };
 
-export const FieldView: React.FC<FieldViewProps> = ({ listado, onHoverLine }) => {
+export const FieldView: React.FC<FieldViewProps> = ({ listado, arch, onHoverLine }) => {
   return (
     <div className="p-4 space-y-3 bg-[#121317]">
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-2 pb-2.5 border-b border-[#272a2e] text-[12px] font-mono">
         <span className="text-[#878c99] mr-1">Campos de 32 bits:</span>
-        <span className="px-2 py-0.5 rounded-[4px] border bg-[#a8ff53]/10 border-[#a8ff53]/30 text-[#a8ff53]">
+        <span className="px-2 py-0.5 rounded-[4px] border bg-[var(--accent-soft)] border-[var(--accent-border)] text-[var(--accent)]">
           imm / shamt / offset
         </span>
-        <span className="px-2 py-0.5 rounded-[4px] border bg-[#fa3abf]/10 border-[#fa3abf]/30 text-[#fa3abf]">
-          funct7
-        </span>
+        {arch === 'arm' && (
+          <span className="px-2 py-0.5 rounded-[4px] border bg-[#d9f07c]/10 border-[#d9f07c]/30 text-[#d9f07c]">
+            cond
+          </span>
+        )}
+        {arch !== 'arm' && (
+          <span className="px-2 py-0.5 rounded-[4px] border bg-[#fa3abf]/10 border-[#fa3abf]/30 text-[#fa3abf]">
+            {arch === 'mips' ? 'funct' : 'funct7'}
+          </span>
+        )}
         <span className="px-2 py-0.5 rounded-[4px] border bg-[#e888f8]/10 border-[#e888f8]/30 text-[#e888f8]">
-          rs2
+          {arch === 'mips' ? 'rt' : arch === 'arm' ? 'Rm / Rs' : 'rs2'}
         </span>
         <span className="px-2 py-0.5 rounded-[4px] border bg-[#7655fd]/15 border-[#7655fd]/40 text-[#9c9af2]">
-          rs1
+          {arch === 'mips' ? 'rs' : arch === 'arm' ? 'Rn' : 'rs1'}
         </span>
-        <span className="px-2 py-0.5 rounded-[4px] border bg-[#d9f07c]/10 border-[#d9f07c]/30 text-[#d9f07c]">
-          funct3
-        </span>
+        {arch === 'riscv' && (
+          <span className="px-2 py-0.5 rounded-[4px] border bg-[#d9f07c]/10 border-[#d9f07c]/30 text-[#d9f07c]">
+            funct3
+          </span>
+        )}
         <span className="px-2 py-0.5 rounded-[4px] border bg-[#afec73]/10 border-[#afec73]/30 text-[#afec73]">
-          rd
+          {arch === 'arm' ? 'Rd' : 'rd'}
         </span>
         <span className="px-2 py-0.5 rounded-[4px] border bg-[#9c9af2]/10 border-[#9c9af2]/30 text-[#9c9af2]">
-          opcode
+          {arch === 'arm' ? 'cmd / op' : 'opcode'}
         </span>
       </div>
 
@@ -59,7 +68,7 @@ export const FieldView: React.FC<FieldViewProps> = ({ listado, onHoverLine }) =>
               <div className="flex items-center gap-2">
                 <span className="text-[#878c99]">#{line.index}</span>
                 <span className="text-[#b5b8c0]">({line.pcHex})</span>
-                <span className="px-1.5 py-0.2 rounded-[4px] bg-[#121317] text-[#a8ff53] font-medium border border-[#272a2e]">
+                <span className="px-1.5 py-0.2 rounded-[4px] bg-[#121317] text-[var(--accent)] font-medium border border-[#272a2e]">
                   0x{line.hex}
                 </span>
                 <span className="text-[#878c99]">Tipo {line.tipo}</span>

@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Copy, Check } from 'lucide-react';
-import { AssembledLine } from '../compiler/riscv/assembler';
-import { InstrCategory, SUPPORTED_ISA } from '../compiler/riscv/isa';
+import type { AssembledLine, InstrCategory, IsaCatalogEntry } from '../compiler/types';
 
 interface ListingTableProps {
   listado: AssembledLine[];
+  archName: string;
+  isaCatalog: IsaCatalogEntry[];
   onHoverLine?: (cLine?: number) => void;
 }
 
-// Trigger.dev syntax-aligned colors for Instruction Categories
 const BADGE_STYLE: Record<InstrCategory, string> = {
   R: 'text-[#9c9af2] border-[#9c9af2]/30 bg-[#9c9af2]/10',
   I: 'text-[#afec73] border-[#afec73]/30 bg-[#afec73]/10',
@@ -17,8 +17,21 @@ const BADGE_STYLE: Record<InstrCategory, string> = {
   B: 'text-[#fa3abf] border-[#fa3abf]/30 bg-[#fa3abf]/10',
 };
 
-export const ListingTable: React.FC<ListingTableProps> = ({ listado, onHoverLine }) => {
+export const ListingTable: React.FC<ListingTableProps> = ({
+  listado,
+  archName,
+  isaCatalog,
+  onHoverLine,
+}) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  const descByMnemonic = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const item of isaCatalog) {
+      map.set(item.mnemonic, item.descripcion);
+    }
+    return map;
+  }, [isaCatalog]);
 
   const handleCopyHex = (hex: string, index: number) => {
     navigator.clipboard.writeText(hex);
@@ -36,13 +49,13 @@ export const ListingTable: React.FC<ListingTableProps> = ({ listado, onHoverLine
             <th className="py-2.5 px-3">Palabra Hex (32b)</th>
             <th className="py-2.5 px-3 text-center">Tipo</th>
             <th className="py-2.5 px-3">Etiqueta</th>
-            <th className="py-2.5 px-3">Instrucción RISC-V</th>
+            <th className="py-2.5 px-3">Instrucción {archName}</th>
             <th className="py-2.5 px-3 text-right">Línea C</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[#272a2e]">
           {listado.map((line) => {
-            const spec = SUPPORTED_ISA[line.mnemonic];
+            const descripcion = descByMnemonic.get(line.mnemonic) ?? line.mnemonic;
             return (
               <tr
                 key={line.index}
@@ -56,11 +69,11 @@ export const ListingTable: React.FC<ListingTableProps> = ({ listado, onHoverLine
                   <button
                     onClick={() => handleCopyHex(line.hex, line.index)}
                     title="Copiar hexadecimal"
-                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] bg-[#1c1e21] border border-[#272a2e] group-hover:border-[#3b3e45] text-[#a8ff53] font-medium tracking-wider hover:bg-[#272a2e] transition-colors"
+                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] bg-[#1c1e21] border border-[#272a2e] group-hover:border-[#3b3e45] text-[var(--accent)] font-medium tracking-wider hover:bg-[#272a2e] transition-colors"
                   >
                     <span>0x{line.hex}</span>
                     {copiedIndex === line.index ? (
-                      <Check className="w-3 h-3 text-[#a8ff53]" />
+                      <Check className="w-3 h-3 text-[var(--accent)]" />
                     ) : (
                       <Copy className="w-3 h-3 text-[#878c99] opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
@@ -68,7 +81,7 @@ export const ListingTable: React.FC<ListingTableProps> = ({ listado, onHoverLine
                 </td>
                 <td className="py-2 px-3 text-center">
                   <span
-                    title={spec.descripcion}
+                    title={descripcion}
                     className={`inline-block px-2 py-0.5 rounded-[4px] border text-[11px] font-semibold ${BADGE_STYLE[line.tipo]}`}
                   >
                     {line.tipo}
