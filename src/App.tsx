@@ -23,6 +23,7 @@ import { FieldView } from './ui/FieldView';
 import { VhdlPanel } from './ui/VhdlPanel';
 import { SimulatorPanel } from './ui/SimulatorPanel';
 import { DocsView } from './ui/DocsView';
+import { AnimatedBackground } from './ui/AnimatedBackground';
 
 type NavigationPage = 'compiler' | 'simulator' | 'docs';
 type OutputTab = 'listing' | 'fields' | 'vhdl' | 'isa';
@@ -74,10 +75,12 @@ export const App: React.FC = () => {
   return (
     <div
       data-arch={arch}
-      className="min-h-screen flex flex-col bg-[#1c1e21] text-[#e5e7eb] font-sans transition-colors duration-200"
+      className="relative min-h-screen flex flex-col bg-[#1c1e21] text-[#e5e7eb] font-sans transition-colors duration-200 overflow-x-hidden"
     >
+      <AnimatedBackground arch={arch} />
+
       {/* Navbar */}
-      <header className="sticky top-0 z-30 border-b border-[#272a2e] bg-[#1c1e21]/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-30 border-b border-[#272a2e] bg-[#1c1e21]/85 backdrop-blur-md">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           {/* Logo brand */}
           <div className="flex items-center gap-3">
@@ -88,8 +91,8 @@ export const App: React.FC = () => {
               <span className="flex items-center justify-center w-6 h-6 rounded-[4px] bg-[var(--accent-soft)] text-[var(--accent)] transition-colors">
                 <Play className="w-3.5 h-3.5 fill-[var(--accent)] text-[var(--accent)]" />
               </span>
-              <span className="font-display font-semibold text-[20px] text-[#e5e7eb] tracking-tight">
-                Compiler<span className="text-[var(--accent)] transition-colors">.dev</span>
+              <span className="font-display font-semibold text-[20px] text-[#e5e7eb] tracking-wider">
+                VG<span className="text-[var(--accent)] transition-colors">A</span>
               </span>
             </button>
           </div>
@@ -150,7 +153,7 @@ export const App: React.FC = () => {
       </header>
 
       {/* Main Page Routing */}
-      <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <main className="relative z-10 flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* VIEW 1: DOCS & INFO */}
         {currentPage === 'docs' && (
           <DocsView
