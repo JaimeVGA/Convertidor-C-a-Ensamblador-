@@ -34,17 +34,17 @@ export const DocsView: React.FC<DocsViewProps> = ({
   const { meta, isaCatalog } = backend;
 
   return (
-    <div className="max-w-[1000px] mx-auto py-8 px-4 sm:px-6 space-y-10 font-sans text-[#e5e7eb]">
+    <div className="max-w-[1000px] mx-auto py-4 sm:py-8 px-1 sm:px-6 space-y-8 sm:space-y-10 font-sans text-[#e5e7eb]">
       {/* Hero Header */}
-      <div className="space-y-3 border-b border-[#272a2e] pb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121317] border border-[#272a2e] text-[12px] font-mono text-[var(--accent)]">
-          <span className="w-2 h-2 rounded-full bg-[var(--accent)] shadow-[0_0_8px_var(--accent-glow)]" />
+      <div className="space-y-3 border-b border-[#272a2e] pb-6 sm:pb-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121317] border border-[#272a2e] text-[11px] sm:text-[12px] font-mono text-[var(--accent)]">
+          <span className="w-2 h-2 rounded-full bg-[var(--accent)] shadow-[0_0_8px_var(--accent-glow)] shrink-0" />
           Documentación & Arquitectura — {meta.name}
         </div>
-        <h1 className="font-display font-medium text-[36px] sm:text-[44px] leading-tight tracking-[0.03em] text-[#e5e7eb]">
+        <h1 className="font-display font-medium text-[26px] sm:text-[36px] md:text-[44px] leading-tight tracking-[0.03em] text-[#e5e7eb]">
           Compilador C → {meta.shortName} & Síntesis VHDL
         </h1>
-        <p className="text-[16px] text-[#878c99] leading-relaxed max-w-[760px]">
+        <p className="text-[14px] sm:text-[16px] text-[#878c99] leading-relaxed max-w-[760px]">
           Plataforma web multi-arquitectura diseñada para traducir un subconjunto estricto de código en C a ensamblador{' '}
           <strong>RISC-V, MIPS32 y ARM32</strong>, generar la memoria de instrucciones en formato VHDL para simulación en{' '}
           <strong>Active-HDL</strong> y verificar la ejecución en hardware ciclo a ciclo.

@@ -27,32 +27,32 @@ export const Editor: React.FC<EditorProps> = ({
   return (
     <div className="flex flex-col h-full bg-[#1c1e21] border border-[#272a2e] rounded-[4px] overflow-hidden">
       {/* Terminal Header */}
-      <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-[#272a2e] bg-[#121317]">
-        <div className="flex items-center gap-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 sm:px-3.5 py-2 sm:py-2.5 border-b border-[#272a2e] bg-[#121317]">
+        <div className="flex items-center gap-2">
           {/* Dynamic Signal LED */}
-          <span className="w-2 h-2 rounded-full bg-[var(--accent)] shadow-[0_0_8px_var(--accent-glow)] transition-colors" />
-          <Terminal className="w-3.5 h-3.5 text-[#878c99]" />
-          <span className="text-[14px] font-mono font-medium text-[#d7d9dd]">
+          <span className="w-2 h-2 rounded-full bg-[var(--accent)] shadow-[0_0_8px_var(--accent-glow)] transition-colors shrink-0" />
+          <Terminal className="w-3.5 h-3.5 text-[#878c99] shrink-0" />
+          <span className="text-[13px] sm:text-[14px] font-mono font-medium text-[#d7d9dd]">
             main.c
           </span>
-          <span className="text-[12px] font-mono px-2 py-0.5 rounded-full bg-[#272a2e] text-[#878c99] border border-[#3b3e45]">
+          <span className="text-[11px] sm:text-[12px] font-mono px-2 py-0.5 rounded-full bg-[#272a2e] text-[#878c99] border border-[#3b3e45] whitespace-nowrap">
             {archMeta.badge}
           </span>
         </div>
 
-        <div className="flex items-center gap-3 text-[14px] font-mono">
+        <div className="flex items-center gap-2.5 text-[12px] sm:text-[14px] font-mono">
           {highlightedLine !== undefined && (
-            <span className="text-[var(--accent)] text-[12px] bg-[var(--accent-soft)] px-2 py-0.5 rounded-[4px] border border-[var(--accent-border)]">
+            <span className="text-[var(--accent)] text-[11px] sm:text-[12px] bg-[var(--accent-soft)] px-2 py-0.5 rounded-[4px] border border-[var(--accent-border)]">
               Línea C #{highlightedLine}
             </span>
           )}
           {errores.length === 0 ? (
-            <span className="flex items-center gap-1.5 text-[var(--accent)] text-[12px]">
+            <span className="flex items-center gap-1.5 text-[var(--accent)] text-[12px] whitespace-nowrap">
               <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
               Sintaxis válida
             </span>
           ) : (
-            <span className="flex items-center gap-1.5 text-[#f43f5e] text-[12px]">
+            <span className="flex items-center gap-1.5 text-[#f43f5e] text-[12px] whitespace-nowrap">
               <span className="w-1.5 h-1.5 rounded-full bg-[#f43f5e]" />
               {errores.length} {errores.length === 1 ? 'error' : 'errores'}
             </span>
@@ -61,7 +61,7 @@ export const Editor: React.FC<EditorProps> = ({
       </div>
 
       {/* CodeMirror Workspace (Ink Well #121317 surface) */}
-      <div className="relative flex-1 min-h-[320px] bg-[#121317] overflow-auto">
+      <div className="relative flex-1 min-h-[240px] sm:min-h-[320px] bg-[#121317] overflow-auto">
         <CodeMirror
           value={code}
           height="100%"

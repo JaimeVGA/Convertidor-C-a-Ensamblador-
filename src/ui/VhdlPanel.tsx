@@ -41,37 +41,37 @@ export const VhdlPanel: React.FC<VhdlPanelProps> = ({
   return (
     <div className="flex flex-col h-full bg-[#121317]">
       {/* Hairline Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 bg-[#1c1e21] border-b border-[#272a2e]">
-        <div className="flex items-center gap-1.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-3 sm:px-4 py-2.5 bg-[#1c1e21] border-b border-[#272a2e]">
+        <div className="flex flex-wrap items-center gap-1.5">
           <button
             onClick={() => setSubTab('vhdl')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[14px] font-mono transition-colors ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[4px] text-[12px] sm:text-[14px] font-mono transition-colors ${
               subTab === 'vhdl'
                 ? 'bg-[#121317] text-[#e5e7eb] border border-[#3b3e45]'
                 : 'text-[#878c99] hover:text-[#d7d9dd]'
             }`}
           >
-            <FileCode className="w-3.5 h-3.5 text-[#9c9af2]" />
-            instruction_memory.vhdl
+            <FileCode className="w-3.5 h-3.5 text-[#9c9af2] shrink-0" />
+            <span className="truncate">instruction_memory.vhdl</span>
           </button>
           <button
             onClick={() => setSubTab('txt')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[14px] font-mono transition-colors ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[4px] text-[12px] sm:text-[14px] font-mono transition-colors ${
               subTab === 'txt'
                 ? 'bg-[#121317] text-[#e5e7eb] border border-[#3b3e45]'
                 : 'text-[#878c99] hover:text-[#d7d9dd]'
             }`}
           >
-            <FileText className="w-3.5 h-3.5 text-[#afec73]" />
-            programa.txt ({wordCount} líneas)
+            <FileText className="w-3.5 h-3.5 text-[#afec73] shrink-0" />
+            <span>programa.txt ({wordCount})</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Secondary Ghost Button */}
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[14px] font-sans text-[#d7d9dd] hover:text-[#e5e7eb] hover:bg-[#272a2e] border border-[#272a2e] transition-colors"
+            className="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[4px] text-[12px] sm:text-[14px] font-sans text-[#d7d9dd] hover:text-[#e5e7eb] hover:bg-[#272a2e] border border-[#272a2e] transition-colors"
           >
             {copied ? (
               <>
@@ -89,37 +89,37 @@ export const VhdlPanel: React.FC<VhdlPanelProps> = ({
           {/* Primary Accent Filled CTA Button */}
           <button
             onClick={() => downloadFile(vhdl, 'instruction_memory.vhdl')}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[4px] text-[14px] font-sans font-medium bg-[var(--accent)] text-[#121317] hover:bg-[var(--accent-hover)] transition-all shadow-[inset_0_0_0_1px_var(--accent-border)]"
+            className="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-[4px] text-[12px] sm:text-[14px] font-sans font-medium bg-[var(--accent)] text-[#121317] hover:bg-[var(--accent-hover)] transition-all shadow-[inset_0_0_0_1px_var(--accent-border)] whitespace-nowrap"
           >
             <Download className="w-3.5 h-3.5 text-[#121317]" />
-            <span>Descargar .vhdl</span>
+            <span>.vhdl</span>
           </button>
 
           <button
             onClick={() => downloadFile(hexTxt, 'programa.txt')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[14px] font-sans text-[#d7d9dd] hover:text-[#e5e7eb] hover:bg-[#272a2e] border border-[#272a2e] transition-colors"
+            className="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[4px] text-[12px] sm:text-[14px] font-sans text-[#d7d9dd] hover:text-[#e5e7eb] hover:bg-[#272a2e] border border-[#272a2e] transition-colors whitespace-nowrap"
           >
             <Download className="w-3.5 h-3.5 text-[#878c99]" />
-            <span>Descargar .txt</span>
+            <span>.txt</span>
           </button>
         </div>
       </div>
 
       {/* Info Status Bar */}
-      <div className="px-4 py-2 bg-[#121317] border-b border-[#272a2e] flex flex-wrap items-center justify-between gap-2 text-[12px] font-mono text-[#878c99]">
+      <div className="px-3 sm:px-4 py-2 bg-[#121317] border-b border-[#272a2e] flex flex-wrap items-center justify-between gap-2 text-[11px] sm:text-[12px] font-mono text-[#878c99]">
         <span>
           Entidad: <strong className="text-[#e5e7eb]">instruction_memory</strong> · ISA:{' '}
           <strong className="text-[var(--accent)]">{archName}</strong> · Puertos:{' '}
-          <code className="text-[#b5b8c0]">addr(31 downto 0)</code> →{' '}
-          <code className="text-[#b5b8c0]">data(31 downto 0)</code>
+          <code className="text-[#b5b8c0]">addr(31..0)</code> →{' '}
+          <code className="text-[#b5b8c0]">data(31..0)</code>
         </span>
         <span>
-          Ocupación: <strong className="text-[var(--accent)]">{wordCount}</strong> / {romDepth} palabras
+          Ocupación: <strong className="text-[var(--accent)]">{wordCount}</strong> / {romDepth} pal.
         </span>
       </div>
 
       {/* Recessed Inset Terminal Code */}
-      <pre className="p-4 text-[14px] font-mono text-[#e5e7eb] overflow-auto max-h-[460px] leading-relaxed select-all bg-[#121317]">
+      <pre className="p-3 sm:p-4 text-[12px] sm:text-[14px] font-mono text-[#e5e7eb] overflow-auto max-h-[360px] sm:max-h-[460px] leading-relaxed select-all bg-[#121317]">
         {activeContent}
       </pre>
     </div>

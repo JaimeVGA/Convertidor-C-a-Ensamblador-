@@ -81,61 +81,61 @@ export const App: React.FC = () => {
 
       {/* Navbar */}
       <header className="sticky top-0 z-30 border-b border-[#272a2e] bg-[#1c1e21]/85 backdrop-blur-md">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+        <div className="max-w-[1200px] mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4">
           {/* Logo brand */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setCurrentPage('compiler')}
-              className="flex items-center gap-2 hover:opacity-90 transition-opacity"
+              className="flex items-center gap-1.5 sm:gap-2 hover:opacity-90 transition-opacity"
             >
               <span className="flex items-center justify-center w-6 h-6 rounded-[4px] bg-[var(--accent-soft)] text-[var(--accent)] transition-colors">
                 <Play className="w-3.5 h-3.5 fill-[var(--accent)] text-[var(--accent)]" />
               </span>
-              <span className="font-display font-semibold text-[20px] text-[#e5e7eb] tracking-wider">
+              <span className="font-display font-semibold text-[18px] sm:text-[20px] text-[#e5e7eb] tracking-wider">
                 VG<span className="text-[var(--accent)] transition-colors">A</span>
               </span>
             </button>
           </div>
 
           {/* Nav Navigation Links & Repo Link */}
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar">
             <button
               onClick={() => setCurrentPage('compiler')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[14px] font-sans transition-colors ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-[4px] text-[12px] sm:text-[14px] font-sans whitespace-nowrap transition-colors ${
                 currentPage === 'compiler'
                   ? 'bg-[#121317] text-[#e5e7eb] border border-[#3b3e45]'
                   : 'text-[#d7d9dd] hover:text-[#e5e7eb] hover:bg-[#272a2e]'
               }`}
             >
-              <Code2 className="w-3.5 h-3.5 text-[#9c9af2]" />
+              <Code2 className="w-3.5 h-3.5 text-[#9c9af2] shrink-0" />
               <span>Compilador</span>
             </button>
 
             <button
               onClick={() => setCurrentPage('simulator')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[14px] font-sans transition-colors ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-[4px] text-[12px] sm:text-[14px] font-sans whitespace-nowrap transition-colors ${
                 currentPage === 'simulator'
                   ? 'bg-[#121317] text-[#e5e7eb] border border-[#3b3e45]'
                   : 'text-[#d7d9dd] hover:text-[#e5e7eb] hover:bg-[#272a2e]'
               }`}
             >
-              <Cpu className="w-3.5 h-3.5 text-[var(--accent)]" />
+              <Cpu className="w-3.5 h-3.5 text-[var(--accent)] shrink-0" />
               <span>Simulador</span>
               {outcome.ok && (
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] ml-0.5 shadow-[0_0_6px_var(--accent-glow)]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] ml-0.5 shadow-[0_0_6px_var(--accent-glow)] shrink-0" />
               )}
             </button>
 
             <button
               onClick={() => setCurrentPage('docs')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[14px] font-sans transition-colors ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-[4px] text-[12px] sm:text-[14px] font-sans whitespace-nowrap transition-colors ${
                 currentPage === 'docs'
                   ? 'bg-[#121317] text-[#e5e7eb] border border-[#3b3e45]'
                   : 'text-[#d7d9dd] hover:text-[#e5e7eb] hover:bg-[#272a2e]'
               }`}
             >
-              <BookOpen className="w-3.5 h-3.5 text-[#fa3abf]" />
-              <span>Información</span>
+              <BookOpen className="w-3.5 h-3.5 text-[#fa3abf] shrink-0" />
+              <span>Info</span>
             </button>
 
             {/* GitHub Repo Link */}
@@ -143,17 +143,18 @@ export const App: React.FC = () => {
               href="https://github.com/JaimeVGA/Convertidor-C-a-Ensamblador-"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[14px] font-sans text-[#d7d9dd] hover:text-[#e5e7eb] hover:bg-[#272a2e] border border-transparent hover:border-[#272a2e] transition-colors ml-1"
+              title="Repositorio en GitHub"
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-[4px] text-[12px] sm:text-[14px] font-sans text-[#d7d9dd] hover:text-[#e5e7eb] hover:bg-[#272a2e] border border-transparent hover:border-[#272a2e] transition-colors shrink-0"
             >
               <Github className="w-4 h-4 text-[#878c99]" />
-              <span className="hidden sm:inline">Repositorio</span>
+              <span className="hidden md:inline">Repositorio</span>
             </a>
           </div>
         </div>
       </header>
 
       {/* Main Page Routing */}
-      <main className="relative z-10 flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <main className="relative z-10 flex-1 max-w-[1200px] w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5 sm:space-y-6">
         {/* VIEW 1: DOCS & INFO */}
         {currentPage === 'docs' && (
           <DocsView
@@ -166,33 +167,33 @@ export const App: React.FC = () => {
 
         {/* VIEW 2: SIMULATOR DEDICATED PAGE */}
         {currentPage === 'simulator' && (
-          <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#272a2e] pb-4">
+          <div className="space-y-5 sm:space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#272a2e] pb-4">
               <div>
-                <h1 className="font-display font-medium text-[28px] text-[#e5e7eb] flex items-center gap-2.5">
-                  <Cpu className="w-6 h-6 text-[var(--accent)]" />
+                <h1 className="font-display font-medium text-[22px] sm:text-[28px] text-[#e5e7eb] flex items-center gap-2.5">
+                  <Cpu className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent)] shrink-0" />
                   <span>Simulador de Hardware {archMeta.shortName}</span>
                 </h1>
-                <p className="text-[14px] text-[#878c99]">
+                <p className="text-[13px] sm:text-[14px] text-[#878c99] mt-1">
                   Ejecuta el código máquina compilado ciclo a ciclo verificando los {archMeta.regCount} registros y la memoria de datos (RAM).
                 </p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
                 {/* Architecture switcher in simulator */}
-                <div className="flex items-center rounded-[4px] bg-[#121317] p-1 border border-[#272a2e] text-[12px] font-mono">
+                <div className="flex flex-wrap items-center rounded-[4px] bg-[#121317] p-1 border border-[#272a2e] text-[12px] font-mono w-full sm:w-auto">
                   {ARCH_OPTIONS.map((opt) => (
                     <button
                       key={opt.id}
                       onClick={() => setArch(opt.id)}
-                      className={`px-2.5 py-1 rounded-[4px] transition-colors flex items-center gap-1.5 ${
+                      className={`flex-1 sm:flex-initial justify-center px-2.5 py-1 rounded-[4px] transition-colors flex items-center gap-1.5 ${
                         arch === opt.id
                           ? 'bg-[#1c1e21] text-[var(--accent)] border border-[#3b3e45] font-medium'
                           : 'text-[#878c99] hover:text-[#e5e7eb]'
                       }`}
                     >
                       <span
-                        className="w-2 h-2 rounded-full"
+                        className="w-2 h-2 rounded-full shrink-0"
                         style={{ backgroundColor: opt.colorDot }}
                       />
                       <span>{opt.label}</span>
@@ -263,26 +264,26 @@ export const App: React.FC = () => {
 
         {/* VIEW 3: COMPILER MAIN WORKSPACE */}
         {currentPage === 'compiler' && (
-          <div className="space-y-6">
+          <div className="space-y-5 sm:space-y-6">
             {/* Headline Section */}
-            <div className="py-2 text-center max-w-[820px] mx-auto space-y-2">
-              <h2 className="font-display font-medium text-[32px] sm:text-[40px] leading-[1.1] tracking-[0.04em] text-[#e5e7eb]">
+            <div className="py-1 sm:py-2 text-center max-w-[820px] mx-auto space-y-2">
+              <h2 className="font-display font-medium text-[24px] sm:text-[34px] md:text-[40px] leading-[1.15] tracking-[0.03em] sm:tracking-[0.04em] text-[#e5e7eb]">
                 Compila C a{' '}
                 <span className="text-[var(--accent)] transition-colors">
                   {archMeta.shortName}
                 </span>{' '}
                 con emisión limpia a VHDL
               </h2>
-              <p className="text-[15px] text-[#878c99] leading-relaxed max-w-[640px] mx-auto">
+              <p className="text-[13px] sm:text-[15px] text-[#878c99] leading-relaxed max-w-[640px] mx-auto px-1">
                 Generador para procesadores de 32 bits (R, I, L, S, B). Codificación exacta en hexadecimal y memoria ROM compatible con simuladores Active-HDL.
               </p>
             </div>
 
             {/* Workspace Panels (Editor Left, Listing Right) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
               {/* Left Column: C Editor */}
-              <div className="lg:col-span-5 flex flex-col gap-3">
-                <div className="flex-1 min-h-[460px]">
+              <div className="lg:col-span-5 flex flex-col gap-3 min-w-0">
+                <div className="flex-1 min-h-[340px] lg:min-h-[460px]">
                   <Editor
                     code={code}
                     onChange={setCode}
@@ -297,61 +298,61 @@ export const App: React.FC = () => {
               </div>
 
               {/* Right Column: Tabbed Output */}
-              <div className="lg:col-span-7 flex flex-col bg-[#1c1e21] border border-[#272a2e] rounded-[4px] overflow-hidden min-h-[460px]">
+              <div className="lg:col-span-7 flex flex-col bg-[#1c1e21] border border-[#272a2e] rounded-[4px] overflow-hidden min-h-[360px] lg:min-h-[460px] min-w-0">
                 {/* Tab Bar with hairlines */}
-                <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-b border-[#272a2e] bg-[#121317]">
+                <div className="flex flex-wrap items-center justify-between gap-2 px-2.5 sm:px-3 py-2 border-b border-[#272a2e] bg-[#121317]">
                   <div className="flex flex-wrap items-center gap-1">
                     <button
                       onClick={() => setActiveTab('listing')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[14px] font-sans transition-colors ${
+                      className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[4px] text-[12px] sm:text-[14px] font-sans transition-colors ${
                         activeTab === 'listing'
                           ? 'bg-[#1c1e21] text-[#e5e7eb] border border-[#3b3e45]'
                           : 'text-[#878c99] hover:text-[#d7d9dd]'
                       }`}
                     >
-                      <Layers className="w-3.5 h-3.5 text-[#9c9af2]" />
-                      Ensamblador + Hex
+                      <Layers className="w-3.5 h-3.5 text-[#9c9af2] shrink-0" />
+                      <span>Ensamblador + Hex</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('fields')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[14px] font-sans transition-colors ${
+                      className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[4px] text-[12px] sm:text-[14px] font-sans transition-colors ${
                         activeTab === 'fields'
                           ? 'bg-[#1c1e21] text-[#e5e7eb] border border-[#3b3e45]'
                           : 'text-[#878c99] hover:text-[#d7d9dd]'
                       }`}
                     >
-                      <Binary className="w-3.5 h-3.5 text-[#fa3abf]" />
-                      Campos (R/I/L/S/B)
+                      <Binary className="w-3.5 h-3.5 text-[#fa3abf] shrink-0" />
+                      <span>Campos (R/I/L/S/B)</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('vhdl')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[14px] font-sans transition-colors ${
+                      className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[4px] text-[12px] sm:text-[14px] font-sans transition-colors ${
                         activeTab === 'vhdl'
                           ? 'bg-[#1c1e21] text-[#e5e7eb] border border-[#3b3e45]'
                           : 'text-[#878c99] hover:text-[#d7d9dd]'
                       }`}
                     >
-                      <FileCode2 className="w-3.5 h-3.5 text-[var(--accent)]" />
-                      Memoria VHDL
+                      <FileCode2 className="w-3.5 h-3.5 text-[var(--accent)] shrink-0" />
+                      <span>Memoria VHDL</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('isa')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[14px] font-sans transition-colors ${
+                      className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[4px] text-[12px] sm:text-[14px] font-sans transition-colors ${
                         activeTab === 'isa'
                           ? 'bg-[#1c1e21] text-[#e5e7eb] border border-[#3b3e45]'
                           : 'text-[#878c99] hover:text-[#d7d9dd]'
                       }`}
                     >
-                      <HelpCircle className="w-3.5 h-3.5 text-[#d9f07c]" />
-                      ISA ({isaCatalog.length})
+                      <HelpCircle className="w-3.5 h-3.5 text-[#d9f07c] shrink-0" />
+                      <span>ISA ({isaCatalog.length})</span>
                     </button>
                   </div>
 
                   {outcome.ok && (
-                    <div className="font-mono text-[12px] text-[#878c99] hidden sm:block">
+                    <div className="font-mono text-[11px] sm:text-[12px] text-[#878c99] ml-auto">
                       <span className="text-[var(--accent)] font-medium">{outcome.listado.length}</span> / {romDepth} pal.
                     </div>
                   )}
@@ -414,10 +415,10 @@ export const App: React.FC = () => {
             </div>
 
             {/* Bottom Controls Bar: Architecture, MIPS Arithmetic Selector, ROM Depth, Test Examples */}
-            <div className="p-4 rounded-[4px] bg-[#121317] border border-[#272a2e] space-y-3">
+            <div className="p-3 sm:p-4 rounded-[4px] bg-[#121317] border border-[#272a2e] space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2 text-[12px] font-mono text-[#878c99] uppercase tracking-wider">
-                  <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--accent)]" />
+                <div className="flex items-center gap-2 text-[11px] sm:text-[12px] font-mono text-[#878c99] uppercase tracking-wider">
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--accent)] shrink-0" />
                   <span>Configuración de Arquitectura & Código de Prueba</span>
                 </div>
                 <span className="text-[11px] font-mono text-[#878c99]">
@@ -428,27 +429,27 @@ export const App: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-1">
                 {/* Left: Architecture, Conditional MIPS Mode & ROM Depth */}
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center rounded-[4px] bg-[#1c1e21] p-1 border border-[#272a2e] text-[12px] font-mono">
+                <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                  <div className="flex flex-wrap items-center rounded-[4px] bg-[#1c1e21] p-1 border border-[#272a2e] text-[12px] font-mono w-full sm:w-auto">
                     {ARCH_OPTIONS.map((opt) => {
                       const active = arch === opt.id;
                       return (
                         <button
                           key={opt.id}
                           onClick={() => setArch(opt.id)}
-                          className={`px-2.5 py-1 rounded-[4px] transition-colors flex items-center gap-1.5 ${
+                          className={`flex-1 sm:flex-initial justify-center px-2.5 py-1.5 sm:py-1 rounded-[4px] transition-colors flex items-center gap-1.5 ${
                             active
                               ? 'bg-[#121317] text-[var(--accent)] border border-[#3b3e45] font-medium'
                               : 'text-[#878c99] hover:text-[#e5e7eb]'
                           }`}
                         >
                           {active ? (
-                            <CheckCircle2 className="w-3 h-3 text-[var(--accent)]" />
+                            <CheckCircle2 className="w-3 h-3 text-[var(--accent)] shrink-0" />
                           ) : (
                             <span
-                              className="w-2 h-2 rounded-full opacity-75"
+                              className="w-2 h-2 rounded-full opacity-75 shrink-0"
                               style={{ backgroundColor: opt.colorDot }}
                             />
                           )}
@@ -460,12 +461,12 @@ export const App: React.FC = () => {
 
                   {/* Conditional MIPS Arithmetic Instruction Selector */}
                   {arch === 'mips' && (
-                    <div className="flex items-center gap-2 bg-[#1c1e21] border border-[var(--accent-border)] rounded-[4px] px-2.5 py-1 text-[12px] font-mono">
+                    <div className="flex flex-wrap items-center gap-2 bg-[#1c1e21] border border-[var(--accent-border)] rounded-[4px] px-2.5 py-1.5 sm:py-1 text-[11px] sm:text-[12px] font-mono w-full sm:w-auto">
                       <span className="text-[#878c99]">Aritmética MIPS:</span>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 flex-1 sm:flex-initial">
                         <button
                           onClick={() => setMipsArithmeticMode('signed')}
-                          className={`px-2 py-0.5 rounded-[4px] transition-colors ${
+                          className={`flex-1 sm:flex-initial px-2 py-0.5 rounded-[4px] transition-colors ${
                             mipsArithmeticMode === 'signed'
                               ? 'bg-[var(--accent)] text-[#121317] font-semibold'
                               : 'text-[#d7d9dd] hover:bg-[#272a2e]'
@@ -475,7 +476,7 @@ export const App: React.FC = () => {
                         </button>
                         <button
                           onClick={() => setMipsArithmeticMode('unsigned')}
-                          className={`px-2 py-0.5 rounded-[4px] transition-colors ${
+                          className={`flex-1 sm:flex-initial px-2 py-0.5 rounded-[4px] transition-colors ${
                             mipsArithmeticMode === 'unsigned'
                               ? 'bg-[var(--accent)] text-[#121317] font-semibold'
                               : 'text-[#d7d9dd] hover:bg-[#272a2e]'
@@ -487,12 +488,12 @@ export const App: React.FC = () => {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-2 bg-[#1c1e21] border border-[#272a2e] rounded-[4px] px-3 py-1.5 text-[12px] font-mono">
-                    <span className="text-[#878c99]">Tamaño de ROM VHDL:</span>
+                  <div className="flex items-center justify-between sm:justify-start gap-2 bg-[#1c1e21] border border-[#272a2e] rounded-[4px] px-3 py-1.5 text-[12px] font-mono w-full sm:w-auto">
+                    <span className="text-[#878c99] shrink-0">ROM VHDL:</span>
                     <select
                       value={romDepth}
                       onChange={(e) => setRomDepth(Number(e.target.value) as RomDepth)}
-                      className="bg-transparent text-[var(--accent)] font-semibold focus:outline-none cursor-pointer"
+                      className="bg-transparent text-[var(--accent)] font-semibold focus:outline-none cursor-pointer min-w-0 truncate"
                     >
                       <option value={32} className="bg-[#121317]">32 palabras (addr 6..2)</option>
                       <option value={64} className="bg-[#121317]">64 palabras (addr 7..2)</option>
@@ -503,13 +504,13 @@ export const App: React.FC = () => {
                 </div>
 
                 {/* Right: Test code selector */}
-                <div className="flex items-center gap-2 bg-[#1c1e21] border border-[#272a2e] rounded-[4px] px-3 py-1.5 text-[14px]">
-                  <BookOpen className="w-3.5 h-3.5 text-[#878c99]" />
-                  <span className="text-[#878c99] text-[12px] font-mono">Cargar código de prueba:</span>
+                <div className="flex items-center gap-2 bg-[#1c1e21] border border-[#272a2e] rounded-[4px] px-3 py-1.5 text-[13px] sm:text-[14px] w-full lg:w-auto min-w-0">
+                  <BookOpen className="w-3.5 h-3.5 text-[#878c99] shrink-0" />
+                  <span className="text-[#878c99] text-[12px] font-mono shrink-0">Ejemplo:</span>
                   <select
                     value={selectedExampleId}
                     onChange={(e) => handleSelectExample(e.target.value)}
-                    className="bg-transparent text-[#e5e7eb] font-medium focus:outline-none cursor-pointer text-[14px]"
+                    className="bg-transparent text-[#e5e7eb] font-medium focus:outline-none cursor-pointer text-[13px] sm:text-[14px] flex-1 min-w-0 truncate"
                   >
                     {EXAMPLES.map((ex) => (
                       <option key={ex.id} value={ex.id} className="bg-[#121317] text-[#e5e7eb]">
